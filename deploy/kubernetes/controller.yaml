@@ -1,0 +1,87 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: restvirt-csi-controller
+  namespace: kube-system
+  labels:
+    app: restvirt-csi-controller
+spec:
+  selector:
+    app: restvirt-csi-controller
+  clusterIP: None
+#  ports:
+#    - name: csi-provisioner-http
+#      port: 8070
+#    - name: csi-attacher-http
+#      port: 8080
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: restvirt-csi-controller
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: restvirt-csi-controller
+  serviceName: restvirt-csi-controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: restvirt-csi-controller
+    spec:
+      serviceAccountName: restvirt-csi-controller
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: restvirt-csi-driver
+          image: ghcr.io/verbit/restvirt-csi:latest
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--api-endpoint=http://192.168.122.1:8090"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-provisioner
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--http-endpoint=:8070"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          ports:
+            - containerPort: 8070
+              name: http-endpoint
+              protocol: TCP
+        - name: csi-attacher
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--http-endpoint=:8080"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          ports:
+            - containerPort: 8080
+              name: http-endpoint
+              protocol: TCP
+          # TODO: https://github.com/kubernetes-csi/livenessprobe
+      volumes:
+        - name: socket-dir
+          emptyDir: { }
