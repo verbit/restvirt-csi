@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/restvirt-csi.iml" filepath="$PROJECT_DIR$/restvirt-csi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/restvirt-csi.iml" filepath="$PROJECT_DIR$/.idea/restvirt-csi.iml" />
     </modules>
   </component>
 </project>
