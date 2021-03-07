@@ -190,7 +190,7 @@ func (d *Driver) NodeExpandVolume(ctx context.Context, request *csi.NodeExpandVo
 }
 
 func NewDriver(host string) (*Driver, error) {
-	client, err := restvirt.NewClient(host, "", "")
+	client, err := restvirt.NewClientFromEnvironment()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
