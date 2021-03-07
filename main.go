@@ -30,6 +30,8 @@ func main() {
 	fs.StringVar(&apiEndpoint, "api-endpoint", "http://localhost:8090", "test me bro")
 	fs.Parse(os.Args[2:])
 
+	flag.Parse()
+
 	if address == "" {
 		log.Fatalln("csi-address must be set")
 	}
