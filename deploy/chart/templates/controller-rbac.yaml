@@ -8,6 +8,7 @@
 # - decide whether the deployment replicates the external CSI
 #   provisioner, in which case leadership election must be enabled;
 #   this influences the RBAC setup, see below
+---
 {{- if .Values.controller.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
