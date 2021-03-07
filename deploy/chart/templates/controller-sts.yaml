@@ -76,6 +76,9 @@ spec:
         - name: restvirt-client-config
           secret:
             secretName: {{ .Values.controller.clientConfigSecretName }}
+            items:
+              - key: config.yaml
+                path: client-config.yaml
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
