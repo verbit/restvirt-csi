@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"github.com/golang/glog"
 	"google.golang.org/grpc"
+	"k8s.io/klog/v2"
 )
 
 type grpcServer struct {
@@ -70,15 +70,15 @@ func (s *grpcServer) ForceStop() {
 }
 
 func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	glog.V(3).Infof("GRPC call: %s", info.FullMethod)
-	// TODO: glog.V(5).Infof("GRPC request: %s", protosanitizer.StripSecrets(req))
-	glog.V(5).Infof("GRPC request: %s", req)
+	klog.V(3).Infof("GRPC call: %s", info.FullMethod)
+	// TODO: klog.V(5).Infof("GRPC request: %s", protosanitizer.StripSecrets(req))
+	klog.V(5).Infof("GRPC request: %s", req)
 	resp, err := handler(ctx, req)
 	if err != nil {
-		glog.Errorf("GRPC error: %v", err)
+		klog.Errorf("GRPC error: %v", err)
 	} else {
-		// TODO: glog.V(5).Infof("GRPC response: %s", protosanitizer.StripSecrets(resp))
-		glog.V(5).Infof("GRPC response: %s", resp)
+		// TODO: klog.V(5).Infof("GRPC response: %s", protosanitizer.StripSecrets(resp))
+		klog.V(5).Infof("GRPC response: %s", resp)
 	}
 	return resp, err
 }

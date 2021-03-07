@@ -9,9 +9,9 @@ import (
 	"os/exec"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"github.com/golang/glog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"k8s.io/klog/v2"
 )
 
 type NodeServer struct{}
@@ -79,7 +79,7 @@ func (s *NodeServer) NodeStageVolume(ctx context.Context, request *csi.NodeStage
 
 	cmd := exec.Command("mkfs."+fsType, disk_path)
 	out, err := cmd.CombinedOutput()
-	glog.V(3).Infof("mkfs output: %s", out)
+	klog.V(3).Infof("mkfs output: %s", out)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
@@ -91,7 +91,7 @@ func (s *NodeServer) NodeStageVolume(ctx context.Context, request *csi.NodeStage
 
 	cmd = exec.Command("mount", disk_path, request.StagingTargetPath)
 	out, err = cmd.CombinedOutput()
-	glog.V(3).Infof("mount output: %s", out)
+	klog.V(3).Infof("mount output: %s", out)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
@@ -110,7 +110,7 @@ func (s *NodeServer) NodeUnstageVolume(ctx context.Context, request *csi.NodeUns
 
 	cmd := exec.Command("umount", request.StagingTargetPath)
 	out, err := cmd.CombinedOutput()
-	glog.V(3).Infof("umount output: %s", out)
+	klog.V(3).Infof("umount output: %s", out)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
@@ -142,7 +142,7 @@ func (s *NodeServer) NodePublishVolume(ctx context.Context, request *csi.NodePub
 
 	cmd := exec.Command("mount", "-o", "bind", request.StagingTargetPath, request.TargetPath)
 	out, err := cmd.CombinedOutput()
-	glog.V(3).Infof("mount output: %s", out)
+	klog.V(3).Infof("mount output: %s", out)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "mount bind error: %v", err)
 	}
@@ -161,7 +161,7 @@ func (s *NodeServer) NodeUnpublishVolume(ctx context.Context, request *csi.NodeU
 
 	cmd := exec.Command("umount", request.TargetPath)
 	out, err := cmd.CombinedOutput()
-	glog.V(3).Infof("umount output: %s", out)
+	klog.V(3).Infof("umount output: %s", out)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}

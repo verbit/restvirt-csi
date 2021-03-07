@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"os"
+
+	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -28,9 +30,9 @@ func main() {
 	fs.StringVar(&address, "csi-address", "", "test me bro")
 	var apiEndpoint string
 	fs.StringVar(&apiEndpoint, "api-endpoint", "http://localhost:8090", "test me bro")
-	fs.Parse(os.Args[2:])
 
-	flag.Parse()
+	klog.InitFlags(fs)
+	fs.Parse(os.Args[2:])
 
 	if address == "" {
 		log.Fatalln("csi-address must be set")
