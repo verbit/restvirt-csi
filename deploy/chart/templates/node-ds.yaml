@@ -1,0 +1,76 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: restvirt-csi-node
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: restvirt-csi-node
+  template:
+    metadata:
+      labels:
+        app: restvirt-csi-node
+    spec:
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: restvirt-csi-driver
+          image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: kubelet-dir
+              mountPath: /var/lib/kubelet
+              mountPropagation: Bidirectional
+            - name: plugin-dir
+              mountPath: /csi
+            - name: cloud-init-dir
+              mountPath: /var/run/cloud-init/
+              readOnly: true
+            - name: device-dir
+              mountPath: /dev
+        - name: node-driver-registrar
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
+          args:
+            - "--csi-address=/csi/csi.sock"
+            - "--kubelet-registration-path=/var/lib/kubelet/plugins/restvirt.verbit.io/csi.sock"
+            - "--health-port=9809"
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /csi
+            - name: registration-dir
+              mountPath: /registration
+          ports:
+            - containerPort: 9809
+              name: healthz
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+      volumes:
+        - name: kubelet-dir
+          hostPath:
+            path: /var/lib/kubelet/
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: Directory
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/restvirt.verbit.io/
+            type: DirectoryOrCreate
+        - name: cloud-init-dir
+          hostPath:
+            path: /var/run/cloud-init/
+        - name: device-dir
+          hostPath:
+            path: /dev

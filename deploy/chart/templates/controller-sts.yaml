@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: restvirt-csi-controller
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: restvirt-csi-controller
+  serviceName: restvirt-csi-controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: restvirt-csi-controller
+    spec:
+      serviceAccountName: restvirt-csi-controller
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: restvirt-csi-driver
+          image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+            - name: RESTVIRT_CONFIG
+              value: /etc/restvirt/client-config.yaml
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: restvirt-client-config
+              mountPath: /etc/restvirt/client-config.yaml
+        - name: csi-provisioner
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--http-endpoint=:8070"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          ports:
+            - containerPort: 8070
+              name: http-endpoint
+              protocol: TCP
+        - name: csi-attacher
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--http-endpoint=:8080"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          ports:
+            - containerPort: 8080
+              name: http-endpoint
+              protocol: TCP
+          # TODO: https://github.com/kubernetes-csi/livenessprobe
+      volumes:
+        - name: socket-dir
+          emptyDir: { }
+        - name: restvirt-client-config
+          secret:
+            secretName: {{ .Values.controller.clientConfigSecretName }}
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
