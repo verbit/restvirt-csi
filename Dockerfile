@@ -3,10 +3,12 @@
 ############################
 FROM golang:1.16-alpine AS builder
 
+ARG version
+
 WORKDIR /go/src/app
 
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w -extldflags -static"
+RUN CGO_ENABLED=0 go build -ldflags="-s -w -extldflags -static -X main.version=$version"
 
 ############################
 # STEP 2 build a small image

@@ -1,11 +1,14 @@
 package main
 
 import (
-	"github.com/container-storage-interface/spec/lib/go/csi"
-	"google.golang.org/grpc"
+	"context"
 	"log"
 	"net"
 	"sync"
+
+	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/golang/glog"
+	"google.golang.org/grpc"
 )
 
 type grpcServer struct {
@@ -26,21 +29,26 @@ func (s *grpcServer) Start(apiHost string, network string, address string) {
 	return
 }
 
-func (s *grpcServer) Run(apiHost string, network string, address string) {
-
+func (s *grpcServer) Run(mode string, network string, address string) {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(logGRPC),
 	}
 	server := grpc.NewServer(opts...)
 	s.server = server
 
-	driver, err := NewDriver(apiHost)
-	if err != nil {
-		log.Fatalf("Failed to create driver: %v", err)
+	csi.RegisterIdentityServer(server, &IdentityServer{})
+
+	if mode == "node" {
+		csi.RegisterNodeServer(server, &NodeServer{})
 	}
-	csi.RegisterIdentityServer(server, driver)
-	csi.RegisterControllerServer(server, driver)
-	csi.RegisterNodeServer(server, driver)
+
+	if mode == "controller" {
+		driver, err := NewDriver()
+		if err != nil {
+			log.Fatalf("Failed to create driver: %v", err)
+		}
+		csi.RegisterControllerServer(server, driver)
+	}
 
 	listener, err := net.Listen(network, address)
 	if err != nil {
@@ -59,4 +67,18 @@ func (s *grpcServer) Stop() {
 
 func (s *grpcServer) ForceStop() {
 	s.server.Stop()
+}
+
+func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	glog.V(3).Infof("GRPC call: %s", info.FullMethod)
+	// TODO: glog.V(5).Infof("GRPC request: %s", protosanitizer.StripSecrets(req))
+	glog.V(5).Infof("GRPC request: %s", req)
+	resp, err := handler(ctx, req)
+	if err != nil {
+		glog.Errorf("GRPC error: %v", err)
+	} else {
+		// TODO: glog.V(5).Infof("GRPC response: %s", protosanitizer.StripSecrets(resp))
+		glog.V(5).Infof("GRPC response: %s", resp)
+	}
+	return resp, err
 }

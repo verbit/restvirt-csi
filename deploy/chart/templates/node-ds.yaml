@@ -18,6 +18,7 @@ spec:
         - name: restvirt-csi-driver
           image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
           args:
+            - "node"
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
           env:

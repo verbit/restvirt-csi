@@ -19,6 +19,12 @@ func main() {
 		log.Fatalln("csi-address must be set")
 	}
 
+	if flag.NArg() < 1 {
+		log.Fatalln(`you must specify "node" or "controller"`)
+	}
+
+	mode := flag.Arg(0)
+
 	server := NewGRPCServer()
-	server.Run(apiEndpoint, "unix", address)
+	server.Run(mode, "unix", address)
 }

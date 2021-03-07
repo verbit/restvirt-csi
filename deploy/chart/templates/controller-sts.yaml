@@ -39,6 +39,7 @@ spec:
         - name: csi-provisioner
           image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
           args:
+            - "controller"
             - "--csi-address=$(ADDRESS)"
             - "--http-endpoint=:8070"
           env:
