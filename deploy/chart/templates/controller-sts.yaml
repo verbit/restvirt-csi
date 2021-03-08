@@ -24,6 +24,7 @@ spec:
           image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
+            - "controller"
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
           env:
