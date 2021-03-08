@@ -17,6 +17,7 @@ spec:
       containers:
         - name: restvirt-csi-driver
           image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "node"
             - "--v=5"
