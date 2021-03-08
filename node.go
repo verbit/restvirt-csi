@@ -85,7 +85,7 @@ func (s *NodeServer) NodeStageVolume(ctx context.Context, request *csi.NodeStage
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
 
-	err = os.MkdirAll(request.StagingTargetPath, os.ModeDir)
+	err = os.MkdirAll(request.StagingTargetPath, 0775)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
