@@ -81,6 +81,7 @@ func (s *NodeServer) NodeStageVolume(ctx context.Context, request *csi.NodeStage
 	out, err := cmd.CombinedOutput()
 	klog.V(3).Infof("mkfs output: %s", out)
 	if err != nil {
+		// FIXME: output error output
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
 
@@ -135,7 +136,7 @@ func (s *NodeServer) NodePublishVolume(ctx context.Context, request *csi.NodePub
 		return nil, status.Error(codes.InvalidArgument, "no volume capability")
 	}
 
-	err := os.MkdirAll(request.TargetPath, os.ModeDir)
+	err := os.MkdirAll(request.TargetPath, 0775)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
