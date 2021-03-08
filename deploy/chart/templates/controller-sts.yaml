@@ -31,12 +31,12 @@ spec:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
             - name: RESTVIRT_CONFIG
-              value: /etc/restvirt/client-config.yaml
+              value: /etc/restvirt/client/config.yaml
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
             - name: restvirt-client-config
-              mountPath: /etc/restvirt/client-config.yaml
+              mountPath: /etc/restvirt/client
         - name: csi-provisioner
           image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
           args:
@@ -78,9 +78,6 @@ spec:
         - name: restvirt-client-config
           secret:
             secretName: {{ .Values.controller.clientConfigSecretName }}
-            items:
-              - key: config.yaml
-                path: client-config.yaml
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
