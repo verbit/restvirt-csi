@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 	"sync"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
@@ -50,6 +51,10 @@ func (s *grpcServer) Run(mode string, network string, address string) {
 		csi.RegisterControllerServer(server, driver)
 	}
 
+	_, err := os.Stat(address)
+	if err == nil {
+		os.Remove(address)
+	}
 	listener, err := net.Listen(network, address)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
