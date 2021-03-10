@@ -34,5 +34,5 @@ jobs:
           build-args:
             version=${{ steps.version.outputs.VERSION }}
           tags: |
-            ghcr.io/verbit/restvirt-csi:${{ steps.version.outputs.VERSION }}
-            ghcr.io/verbit/restvirt-csi:latest
+            ghcr.io/verbit/restvirt-csi-driver:${{ steps.version.outputs.VERSION }}
+            ghcr.io/verbit/restvirt-csi-driver:latest
