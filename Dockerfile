@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w -extldflags -static -X main.version=$
 ############################
 FROM alpine:3.12
 
-LABEL org.opencontainers.image.source="https://github.com/verbit/restvirt-csi"
+LABEL org.opencontainers.image.source="https://github.com/verbit/restvirt-csi-driver"
 
 RUN apk add --no-cache e2fsprogs util-linux
 
