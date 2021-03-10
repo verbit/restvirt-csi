@@ -2,7 +2,6 @@ kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: restvirt-csi-node
-  namespace: kube-system
 spec:
   selector:
     matchLabels:
@@ -16,7 +15,7 @@ spec:
         - name: ghcr
       containers:
         - name: restvirt-csi-driver
-          image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "node"

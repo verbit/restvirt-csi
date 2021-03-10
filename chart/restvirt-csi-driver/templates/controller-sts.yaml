@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: restvirt-csi-controller
-  namespace: kube-system
 spec:
   selector:
     matchLabels:
@@ -14,14 +13,14 @@ spec:
       labels:
         app: restvirt-csi-controller
     spec:
-      serviceAccountName: restvirt-csi-controller
+      serviceAccountName: {{ include "restvirt-csi-driver.controller.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: restvirt-csi-driver
-          image: "ghcr.io/verbit/restvirt-csi:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "controller"
