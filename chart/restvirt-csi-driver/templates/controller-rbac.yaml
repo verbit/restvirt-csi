@@ -68,7 +68,7 @@ metadata:
   name: restvirt-csi-controller
 subjects:
   - kind: ServiceAccount
-    name: restvirt-csi-controller
+    name: {{ include "restvirt-csi-driver.controller.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
@@ -110,7 +110,7 @@ metadata:
   name: restvirt-csi-controller
 subjects:
   - kind: ServiceAccount
-    name: restvirt-csi-controller
+    name: {{ include "restvirt-csi-driver.controller.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
