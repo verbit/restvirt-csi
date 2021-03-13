@@ -60,3 +60,11 @@ Create the name of the service account to use
 {{- default "default" .Values.controller.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Default image tag
+*/}}
+{{- define "restvirt-csi-driver.image.tag" -}}
+{{- default (printf "v%s" .Chart.AppVersion) .Values.image.tag }}
+{{- end }}

@@ -15,7 +15,7 @@ spec:
         - name: ghcr
       containers:
         - name: restvirt-csi-driver
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ include "restvirt-csi-driver.image.tag" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "node"
