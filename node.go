@@ -16,7 +16,7 @@ import (
 	utilexec "k8s.io/utils/exec"
 )
 
-type NodeServer struct{
+type NodeServer struct {
 	mounter mount.SafeFormatAndMount
 }
 
