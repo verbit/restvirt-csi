@@ -12,9 +12,22 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
+	"k8s.io/mount-utils"
+	utilexec "k8s.io/utils/exec"
 )
 
-type NodeServer struct{}
+type NodeServer struct{
+	mounter mount.SafeFormatAndMount
+}
+
+func NewNodeServer() *NodeServer {
+	return &NodeServer{
+		mounter: mount.SafeFormatAndMount{
+			Interface: mount.New(""),
+			Exec:      utilexec.New(),
+		},
+	}
+}
 
 func (s *NodeServer) NodeGetCapabilities(ctx context.Context, request *csi.NodeGetCapabilitiesRequest) (*csi.NodeGetCapabilitiesResponse, error) {
 	return &csi.NodeGetCapabilitiesResponse{
@@ -77,22 +90,7 @@ func (s *NodeServer) NodeStageVolume(ctx context.Context, request *csi.NodeStage
 		fsType = "ext4"
 	}
 
-	cmd := exec.Command("mkfs."+fsType, disk_path)
-	out, err := cmd.CombinedOutput()
-	klog.V(3).Infof("mkfs output: %s", out)
-	if err != nil {
-		// FIXME: output error output
-		return nil, status.Errorf(codes.Internal, "error: %v", err)
-	}
-
-	err = os.MkdirAll(request.StagingTargetPath, 0775)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error: %v", err)
-	}
-
-	cmd = exec.Command("mount", disk_path, request.StagingTargetPath)
-	out, err = cmd.CombinedOutput()
-	klog.V(3).Infof("mount output: %s", out)
+	err := s.mounter.FormatAndMount(disk_path, request.StagingTargetPath, fsType, []string{})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}

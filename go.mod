@@ -12,4 +12,6 @@ require (
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
 	k8s.io/klog/v2 v2.6.0
+	k8s.io/mount-utils v0.20.5
+	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 )

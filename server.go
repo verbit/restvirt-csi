@@ -40,7 +40,7 @@ func (s *grpcServer) Run(mode string, network string, address string) {
 	csi.RegisterIdentityServer(server, &IdentityServer{})
 
 	if mode == "node" {
-		csi.RegisterNodeServer(server, &NodeServer{})
+		csi.RegisterNodeServer(server, NewNodeServer())
 	}
 
 	if mode == "controller" {
