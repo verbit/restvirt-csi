@@ -5,6 +5,7 @@ import (
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/verbit/restvirt-client"
+	"github.com/verbit/restvirt-client/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -104,17 +105,19 @@ func (d *Driver) ControllerGetVolume(ctx context.Context, request *csi.Controlle
 
 func (d *Driver) ListVolumes(ctx context.Context, request *csi.ListVolumesRequest) (*csi.ListVolumesResponse, error) {
 	// TODO: implement paging
-	volumes, err := d.c.GetVolumes()
+	response, err := d.c.VolumeServiceClient.ListVolumes(ctx, &pb.ListVolumesRequest{})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error: %v", err)
 	}
+
+	volumes := response.Volumes
 
 	volumeEntries := make([]*csi.ListVolumesResponse_Entry, len(volumes))
 	for i, v := range volumes {
 		volumeEntries[i] = &csi.ListVolumesResponse_Entry{
 			Volume: &csi.Volume{
-				CapacityBytes: v.Size,
-				VolumeId:      v.ID,
+				CapacityBytes: int64(v.Size),
+				VolumeId:      v.Id,
 			},
 			Status: &csi.ListVolumesResponse_VolumeStatus{
 				PublishedNodeIds: []string{}, // TODO: implement
